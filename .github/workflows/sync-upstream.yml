@@ -1,0 +1,31 @@
+name: Sync Upstream
+
+on:
+  schedule:
+    - cron: '0 0 1 */3 *'  # Quarterly: Jan 1, Apr 1, Jul 1, Oct 1 at midnight UTC
+  workflow_dispatch:  # Adds "Run workflow" button in Actions tab
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Sync with upstream
+        run: |
+          git remote add upstream https://github.com/anuraghazra/github-readme-stats.git
+          git fetch upstream
+          git merge upstream/main --no-edit --allow-unrelated-histories
+
+      - name: Push changes
+        run: git push origin main
